@@ -58,10 +58,13 @@ cc.Class({
             return this.hex2pixel(hexArr, this.tileH);
         });
 
-        this.node.scale = this.tileScale;
+        //this.node.x = 0;
+        //this.node.y = 0;
         this.setSpriteFrame(hexPx, this[`type${hexData.type}`]);
         this.node.ox = this.node.x;
         this.node.oy = this.node.y;
+        this.node.scale = this.tileScale;
+
     },
     random() {
         //debugger
@@ -84,12 +87,23 @@ cc.Class({
     setSpriteFrame(hexes, tilePic) {
         for (let index = 0; index < hexes.length; index++) {
             let node = new cc.Node('frame');
-            let sprite = node.addComponent(cc.Sprite);
-            sprite.spriteFrame = tilePic;
+       
             node.x = hexes[index].x;
             node.y = hexes[index].y;
+            
+            let sprite = node.addComponent(cc.Sprite);
+            sprite.spriteFrame = tilePic;
+            
             node.parent = this.node;
-            node.scale = this.tileScale;
+            let w_pos = node.convertToWorldSpaceAR(cc.v2(0,0));
+            node.w_pos = w_pos;
+            // 显示当前子节点空间坐标
+            //let n = new cc.Node('w_pos');
+            //n.scale = 0.8;
+            //n.color = cc.Color.BLACK;
+            //n.addComponent(cc.Label).string = node.w_pos.x.toFixed()+ '\n\r' + node.w_pos.y.toFixed();
+            //n.parent = node;
+            node.scale = 0.7;
         }
     },
     addTouchEvent() {
@@ -152,21 +166,24 @@ cc.Class({
                 fillNode.getComponent(cc.Sprite).spriteFrame = spriteFrame;
                 fillNode.scale = 0.8;
                 fillNode.runAction(cc.scaleTo(0.2,1))
-                // 落子成功后重置方块
-                //this.resetTile();
+            
             }
-
             // 落子成功后重置方块
             this.resetTile();
-            // 这里棋盘需要访问当前方块的六边形总数
-            //this.board.curTileLength = fillTiles.length;
             // 触发落入成功的事件
             this.board.dropSuccess(boardTiles[boardTiles.length-1])
         } else {
             this.backSourcePos();
         }
 
-        this.board.checkLose();
+        // 棋盘得分动画播放完毕后会调用checklose方法 动画期间不改变状态 如果需要立即刷新 此处注释移除即可
+        // this.board.checkLose();
+    },
+    // 根据空间坐标找到对应的棋盘位置
+    wposGetNode({x,y}){
+        return this.board.boardFrameList.filter(e=>{
+            return !e.isFulled && Math.abs(e.w_pos.x - x) <= 3 && Math.abs(e.w_pos.y - y) <= 3 
+        })[0];
     },
     checkLose() {
 
@@ -177,54 +194,48 @@ cc.Class({
         const boardFrameList = this.board.boardFrameList;
         const boardFrameListLength = boardFrameList.length;
 
+        // 存储当前子节点世界坐标
+        let arr = []
+        tiles.forEach(e=>arr.push(e.w_pos))
+        // 存储第一个子节点与后续子节点的空间坐标差
+        let subArr = []
+        arr.forEach((e,i)=>{
+            if(arr[i+1]){
+                subArr.push(arr[i+1].sub(arr[0]))
+            }
+        })
 
+        let lose = true;
         for (let i = 0; i < boardFrameListLength; i++) {
             const boardNode = boardFrameList[i];
-            // 过滤出未填充的棋盘格子
-            let srcPos = cc.v2(boardNode.x, boardNode.y);
-            let count = 0;
+    
             if (!boardNode.isFulled) {
-                for (let j = 0; j < tilesLength; j++) {
-                    let len = 45; // 设定重合判定最小间距
-                    // 将方块移到未填充的棋盘格子原点，并获取当前各方块坐标值
-                    let tilePos = srcPos.add(cc.v2(tiles[j].x, tiles[j].y));
-                    // 遍历棋盘格子，判断方块中各六边形是否可以放入
-                    for (let k = 0; k < boardFrameListLength; k++) {
-                        const boardNode = boardFrameList[k];
-                        let dis = cc.v2(boardNode.x, boardNode.y).sub(tilePos).mag();
-                        if(this._shape === 5 && this._list === 0){
-                            //console.log('dis:',dis)
-                        }
-                        if (dis <= len && !boardNode.isFulled) {
-                            count++;
-                            break;
-                        }
-                    }
+                let nodeArr = [];
+                // 根据子节点空间坐标差 挨个找出对应位置的棋盘节点
+                for(let z = 0,len=subArr.length;z<len;z++){
+                    let _wpos = boardNode.w_pos.add(subArr[z])
+                    nodeArr.push(this.wposGetNode(_wpos));
                 }
-
-                if (count === tilesLength) {
-                    canDropCount++;
+                // 如果对应棋盘节点都可放置 则还能玩
+                let _get = nodeArr.length === 0 ? true : nodeArr.every(e=>!!e);
+                if(_get){
+                    console.log(this.node.name,"还能玩")
+                    lose = false;
+                    break;
                 }
+            
             }
         }
-
-        if (canDropCount === 0) {
-            console.log(this.node.name)
-            return true;
-        } else {
-            return false;
-        }
+        return lose;
     },
     resetTile() {
         this.node.removeAllChildren();
         this.node.x = this.node.ox;
         this.node.y = this.node.oy;
+        this.node.scale = 1;        
         this.setTile();
     },
     backSourcePos() {
-        this.node.x = this.node.ox;
-        this.node.y = this.node.oy;
-
         this.node.scale = this.tileScale;
         this.node.x = this.node.ox;
         this.node.y = this.node.oy;

@@ -20,6 +20,7 @@ cc.Class({
         this.status = 1;
 
         this.setHexagonGrid();
+        
         //console.log(this.node.children[0].width,this.node.children[0].height)
         this.getOldScore();
     },
@@ -83,15 +84,13 @@ cc.Class({
         }
 
 
+        // 可进行消除
         if(readyDelTiles.length){
-
-
             // 计算分数
             this.scoreRule(readyDelTiles);
             // 执行消除动画
             this.deleteAnim();
         }
-        //this.checkLose();
 
         this.isDeleting = false;
     },
@@ -225,6 +224,7 @@ cc.Class({
             if (fillTileScript.checkLose()) {
                 count++;
                 fillTile.opacity = 125;
+                console.log(fillTile.name,'无法摆放')
             } else {
                 fillTile.opacity = 255;
             }
@@ -242,11 +242,11 @@ cc.Class({
     gameOver() {
         if(!this.status)return;
         console.log("输了")
-        this.status = 0;
-        return
         const Failed = cc.find('Canvas/Failed');
         Failed.active = true;
         Failed.runAction(cc.fadeIn(0.3));
+        this.status = 0;
+        return
     },
     setHexagonGrid() {
         this.hexes = [];
@@ -270,7 +270,7 @@ cc.Class({
                 this._hexes[col][row] = {q,r};
             }
         }
-        console.log(this.hexes,this._hexes)
+        //console.log(this.hexes,this._hexes)
         this.hexes.forEach((hexs,i) => {
             this.setSpriteFrame(hexs,i);
         });
@@ -294,7 +294,7 @@ cc.Class({
             hexes[index].spriteFrame = node;
             this.setShadowNode(node);
             this.setFillNode(node);
-            this.setHexNode(node,this._hexes[i][index]);
+            this.setWpos(node,this._hexes[i][index]);
             // 保存当前棋盘格子的信息，用于后面落子判定及消除逻辑等。
             this.boardFrameList.push(node);
         }
@@ -310,25 +310,24 @@ cc.Class({
         newNode.addComponent(cc.Sprite);
         newNode.parent = node;
     },
-    setHexNode(node,qr){
-        const {q,r} = qr;
-        const newNode = new cc.Node("qr");
+    // 记录棋盘各棋子世界坐标
+    setWpos(node,qr){
         let w_pos = node.convertToWorldSpaceAR(cc.v2(0,0));
-        const {x,y} = w_pos;
-        newNode.addComponent(cc.Label).string = `${q},${r}`;
-        newNode.y += 15;
-        newNode.scale = 0.8
-        let _node = new cc.Node("w_pos");
-        _node.y -= 25;
-        _node.scale = 0.6
-        _node.addComponent(cc.Label).string = `${w_pos.x.toFixed()},${w_pos.y.toFixed()}`;
+        node.w_pos = w_pos
 
-        _node.parent = node;
+        // 显示行列即当前棋子世界坐标
+        //const {q,r} = qr;
+        //const newNode = new cc.Node("qr");
+        //newNode.addComponent(cc.Label).string = `${q},${r}`;
+        //newNode.y += 15;
+        //newNode.scale = 0.8
+        //let _node = new cc.Node("w_pos");
+        //_node.y -= 25;
+        //_node.scale = 0.6
+        //_node.addComponent(cc.Label).string = `${w_pos.x.toFixed()},${w_pos.y.toFixed()}`;
+        //_node.parent = node;
+        //newNode.parent = node;
 
-        newNode.parent = node;
-
-        node.w_posX = x;
-        node.w_posY = y;
     },
 
 
