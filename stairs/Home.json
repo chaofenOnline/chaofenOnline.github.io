@@ -1,1 +1,0 @@
-{"type":"Scene","props":{"width":640,"runtime":"Home.ts","height":1136},"compId":2,"child":[{"type":"Button","props":{"y":465,"x":282.5,"var":"btnStart","skin":"comp/button.png","label":"进入游戏"},"compId":3}],"loadList":["comp/button.png"],"loadList3D":[]}
