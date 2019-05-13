@@ -1,0 +1,1 @@
+{"type":"View","props":{"width":640,"runtime":"Views/LoadingUI.ts","height":1136},"compId":2,"child":[{"type":"Button","props":{"y":506,"width":293,"skin":"comp/button.png","labelSize":50,"label":"登录完成","height":145,"centerX":0},"compId":3}],"loadList":["comp/button.png"],"loadList3D":[]}

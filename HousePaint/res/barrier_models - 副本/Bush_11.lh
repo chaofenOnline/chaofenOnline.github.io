@@ -1,0 +1,39 @@
+{
+	"version":"LAYAHIERARCHY:01",
+	"data":{
+		"type":"MeshSprite3D",
+		"props":{
+			"name":"Bush_11",
+			"active":true,
+			"isStatic":false,
+			"layer":0,
+			"position":[
+				-0.2259,
+				0,
+				-0.6183
+			],
+			"rotation":[
+				0,
+				-0.7071068,
+				0,
+				-0.7071068
+			],
+			"scale":[
+				4.810002,
+				6.9,
+				10
+			],
+			"meshPath":"Assets/Resources/Bush_11/Bush_Small_1x1_T1-Bush_Small_1x1_T1_0.lm",
+			"enableRender":true,
+			"materials":[
+				{
+										"type":"Laya.UnlitMaterial",
+
+					"path":"Assets/Resources/Bush_11/Bush_11.lmat"
+				}
+			]
+		},
+		"components":[],
+		"child":[]
+	}
+}
