@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+
+    <title>Cocos Creator 3D | BounceLegend</title>
+
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1, minimum-scale=1,maximum-scale=1"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="full-screen" content="yes"/>
+    <meta name="screen-orientation" content="portrait"/>
+    <meta name="x5-fullscreen" content="true"/>
+    <meta name="360-fullscreen" content="true"/>
+    
+    <meta name="renderer" content="webkit"/>
+    <meta name="force-rendering" content="webkit"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+  </head>
+  <body>
+    <h1 class="header">BounceLegend</h1>
+
+    <div id="GameDiv" style="width:720px; height: 1280px;">
+        <canvas id="GameCanvas" width="720" height="1280"></canvas>
+        <div class="progress-bar stripes">
+            <span style="width: 0%"></span>
+        </div>
+    </div>
+    <p class="footer">
+      Created with <a href="https://www.cocos.com/products" title="Cocos Creator 3D">Cocos Creator 3D</a>
+    </p>
+    <!-- Polyfills bundle. -->
+<script src="src/polyfills.bundle.js" charset="utf-8"> </script>
+
+<!-- SystemJS support. -->
+<script src="src/system.bundle.js" charset="utf-8"> </script>
+
+<!-- Manifest file. -->
+<script src="src/settings.js" charset="utf-8"></script>
+
+<!-- Contains window.boot() which bootstrap the logic. -->
+<script src="main.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+    (function () {
+        var boot = window.boot;
+
+        boot.prepare.engine = function() {
+            var importMap = { imports: { }, };
+            importMap.imports['cc'] = './cocos3d-js.min.js';
+            const importMapElement = document.createElement('script');
+            importMapElement.type = 'systemjs-importmap';
+            importMapElement.text = JSON.stringify(importMap, undefined, 2);
+            document.body.appendChild(importMapElement);
+        };
+
+        boot.prepare.loadIIFE = function (url) {
+            return new Promise(function (resolve, reject) {
+                var err;
+
+                function windowErrorListener(evt) {
+                    if (evt.filename === url) {
+                        err = evt.error;
+                    }
+                }
+
+                window.addEventListener('error', windowErrorListener);
+
+                var script = document.createElement('script');
+                script.charset = 'utf-8';
+                script.async = true;
+                script.crossOrigin = 'anonymous';
+                script.addEventListener('error', function () {
+                    window.removeEventListener('error', windowErrorListener);
+                    reject(Error('Error loading ' + url));
+                });
+                script.addEventListener('load', function () {
+                    window.removeEventListener('error', windowErrorListener);
+                    document.head.removeChild(script);
+                    // Note that if an error occurs that isn't caught by this if statement,
+                    // that getRegister will return null and a "did not instantiate" error will be thrown.
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+                script.src = url;
+                document.head.appendChild(script);
+            });
+        };
+
+        boot.prepare.findCanvas = function (id) {
+            var localCanvas;
+            var localContainer;
+
+            var frame;
+            var canvas;
+            var container;
+
+            const el = id;
+            var width;
+            var height;
+            const element = !el ? null : ((el instanceof HTMLElement) ? el : (document.querySelector(el) || document.querySelector('#' + el)));
+            if (!element) {
+                console.error("unknown canvas id:", el);
+            }
+
+            if (element.tagName === 'CANVAS') {
+                width = element.width;
+                height = element.height;
+
+                // it is already a canvas, we wrap it around with a div
+                canvas = localCanvas = element;
+                container = localContainer = document.createElement('div');
+                if (localCanvas && localCanvas.parentNode) {
+                    localCanvas.parentNode.insertBefore(localContainer, localCanvas);
+                }
+            } else {
+                // we must make a new canvas and place into this element
+                if (element.tagName !== 'DIV') {
+                    debug.warnID(3819);
+                }
+                width = element.clientWidth;
+                height = element.clientHeight;
+
+                canvas = localCanvas = document.createElement('canvas');
+                container = localContainer = document.createElement('div');
+                element.appendChild(localContainer);
+            }
+            localContainer.setAttribute('id', 'Cocos3dGameContainer');
+            localContainer.appendChild(localCanvas);
+            frame = (localContainer.parentNode === document.body) ? document.documentElement : localContainer.parentNode;
+
+            addClass(localCanvas, 'gameCanvas');
+            localCanvas.setAttribute('width', width || '480');
+            localCanvas.setAttribute('height', height || '320');
+            localCanvas.setAttribute('tabindex', '99');
+
+            return { frame, canvas, container };
+        };
+
+        /**
+         * for findCanvas
+         */
+        function addClass (element, name) {
+            const hasClass = (' ' + element.className + ' ').indexOf(' ' + name + ' ') > -1;
+            if (!hasClass) {
+                if (element.className) {
+                    element.className += ' ';
+                }
+                element.className += name;
+            }
+        };
+
+        boot.prepare().then(boot);
+ })();
+</script>
+
+  </body>
+</html>
